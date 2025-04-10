@@ -1,0 +1,35 @@
+:host {
+    display: block;
+    height: 100vh;
+  }
+  
+  .material-icons {
+    font-size: 24px;
+  }
+  
+  .bg-gray-100, .bg-gray-200 {
+    max-width: 70%;
+    word-wrap: break-word;
+    padding: 8px 12px;
+  }
+  
+  .bg-gray-100 {
+    background-color: #e5e7eb; /* Light gray for user messages */
+  }
+  
+  .bg-gray-200 {
+    background-color: #e5e7eb; /* Light gray for bot messages */
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }

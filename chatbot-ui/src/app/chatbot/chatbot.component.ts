@@ -16,6 +16,11 @@ export class ChatbotComponent implements AfterViewChecked {
   newMessage: string = '';
   loading: boolean = false;
   botTyping: boolean = false;
+  isDarkTheme: boolean = false; // Track theme state
+
+  toggleTheme() {
+    this.isDarkTheme = !this.isDarkTheme; // Toggle theme
+  }
 
   constructor(private http: HttpClient) {}
 

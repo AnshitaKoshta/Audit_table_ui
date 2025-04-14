@@ -24,6 +24,55 @@
   .animate-spin {
     animation: spin 1s linear infinite;
   }
+
+  /* Target the chat container with overflow-y-auto */
+.chat-container {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #e4e4e5 #f9f9f9; /* Thumb color and track color for Firefox */
+}
+
+/* For WebKit browsers (Chrome, Edge, Safari) */
+.chat-container::-webkit-scrollbar {
+  width: 5px; /* Set the width of the scrollbar */
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background: #e5e7eb; /* Color of the scrollbar track */
+  border-radius: 4px; /* Optional: rounded track */
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background: #a2a3a5; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Optional: rounded thumb */
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background: #cdcdcd; /* Darker color when hovering over the thumb */
+}
+
+/* Dark Theme Scrollbar */
+.dark-theme .chat-container {
+  scrollbar-width: thin; 
+  scrollbar-color: #252525 #0d0f12; /* Light gray thumb, dark gray track */
+}
+
+.dark-theme .chat-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dark-theme .chat-container::-webkit-scrollbar-track {
+  background: #374151; /* Dark gray track */
+  border-radius: 5px;
+}
+
+.dark-theme .chat-container::-webkit-scrollbar-thumb {
+  background: #d1d5db; /* Light gray thumb */
+  border-radius: 4px;
+}
+
+.dark-theme .chat-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af; /* Slightly darker gray on hover */
+}
   
   @keyframes spin {
     from {
@@ -33,3 +82,4 @@
       transform: rotate(360deg);
     }
   }
+

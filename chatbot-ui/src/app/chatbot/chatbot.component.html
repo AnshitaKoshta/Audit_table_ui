@@ -24,7 +24,10 @@
         <div *ngFor="let message of messages" class="flex items-start" [ngClass]="{'justify-end': message.type === 'user', 'justify-start': message.type === 'bot'}">
           <div class="flex items-start p-2 rounded-lg" [ngClass]="{'bg-gray-100': message.type === 'user' && !isDarkTheme, 'bg-gray-800': message.type === 'user' && isDarkTheme, 'bg-gray': message.type === 'bot' && !isDarkTheme, 'bg-none': message.type === 'bot' && isDarkTheme}">
             <img *ngIf="message.type === 'bot'" class="pr-4 h-5" src="/assets/Star 2.png" alt="">
-            <p class="text-left  whitespace-pre-line" [ngClass]="{'text-gray-900 font-semibold': !isDarkTheme, 'text-white font-regular': isDarkTheme}">{{ message.text }}</p>
+            <div>
+              <p class="text-left whitespace-pre-line" [ngClass]="{'text-gray-900 font-semibold': !isDarkTheme, 'text-white font-regular': isDarkTheme}">{{ message.text }}</p>
+              <!-- <p *ngIf="message.fileName" class="text-sm text-gray-500">Attached: {{ message.fileName }}</p> -->
+            </div>
           </div>
         </div>
         <div *ngIf="botTyping" class="flex items-start justify-start">
@@ -36,9 +39,22 @@
       </div>
     </div>
 
+    
     <!-- Input Area (Fixed at Bottom) -->
     <div class="p-4 border rounded-lg" [ngClass]="{'bg-white border-gray-400': !isDarkTheme, 'bg-black border-white': isDarkTheme}">
-      <div class="flex items-center">
+      <div class="flex items-center space-x-2">
+        <!-- File Upload Button -->
+        <label class="p-2 rounded-full hover:bg-gray-300 transition-colors cursor-pointer">
+          <input
+            [ngModel]="selectedFile"
+            type="file"
+            (change)="onFileSelected($event)"
+            class="hidden"
+            accept=".pdf,.txt,.doc,.docx,image/*"
+          />
+          <span class="material-icons" [ngClass]="{'text-gray-700': !isDarkTheme, 'text-gray-100': isDarkTheme}">attach_file</span>
+        </label>
+        <!-- Input Field -->
         <input
           type="text"
           [(ngModel)]="newMessage"
@@ -47,6 +63,7 @@
           class="flex-1 p-1 rounded-l-lg focus:outline-none"
           [ngClass]="{'text-gray-500 bg-white': !isDarkTheme, 'text-gray-200 bg-black': isDarkTheme}"
         />
+        <!-- Send Button -->
         <button
           (click)="sendMessage()"
           class="bg-purple-500 text-white p-2 rounded-full hover:bg-purple-600 transition-colors cursor-pointer"

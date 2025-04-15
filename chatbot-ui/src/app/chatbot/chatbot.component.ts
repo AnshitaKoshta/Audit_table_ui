@@ -17,12 +17,20 @@ export class ChatbotComponent implements AfterViewChecked {
   loading: boolean = false;
   botTyping: boolean = false;
   isDarkTheme: boolean = false; // Track theme state
+  selectedFile: File | null=null;
 
   toggleTheme() {
     this.isDarkTheme = !this.isDarkTheme; // Toggle theme
   }
 
   constructor(private http: HttpClient) {}
+
+  onFileSelected(event: Event) {
+    const input= event.target as HTMLInputElement;
+    if(input.files && input.files.length >0){
+      this.selectedFile=input.files[0];
+    }
+  }
 
   sendMessage() {
     if (this.newMessage.trim()) {

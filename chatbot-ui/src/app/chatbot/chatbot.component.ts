@@ -12,14 +12,17 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ChatbotComponent implements AfterViewChecked {
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
-  messages: { text: string, type: string }[] = [{ text: 'Welcome to SIM-AI! How can I assist you?', type: 'bot' }];
+  messages: { text: string, type: string, isFile?: boolean, fileName?: string }[] = [
+    { text: 'Welcome to SIM-AI! How can I assist you?', type: 'bot' }
+  ];
   newMessage: string = '';
   loading: boolean = false;
   botTyping: boolean = false;
   isDarkTheme: boolean = false; // Track theme state
   selectedFile: File | null=null;
+  selectedFileName: string | null = null; // Track selected file name
 
-  toggleTheme() {
+  toggleTheme() { 
     this.isDarkTheme = !this.isDarkTheme; // Toggle theme
   }
 
@@ -29,17 +32,51 @@ export class ChatbotComponent implements AfterViewChecked {
     const input= event.target as HTMLInputElement;
     if(input.files && input.files.length >0){
       this.selectedFile=input.files[0];
+      this.selectedFileName=this.selectedFile.name; // Store the selected file name
+      console.log('Selected file:', this.selectedFile);
+     
     }
   }
 
   sendMessage() {
-    if (this.newMessage.trim()) {
-      this.messages.push({ text: this.newMessage, type: 'user' });
-      this.newMessage = '';
+    const hasText = this.newMessage.trim() !== '';
+    const hasFile = this.selectedFile && this.selectedFileName;
+  
+    if (hasText || hasFile) {
+      if (hasText) {
+        this.messages.push({ text: this.newMessage.trim(), type: 'user' });
+      }
+  
+      if (hasFile) {
+        this.messages.push({
+          text: `Attached: ${this.selectedFileName}`,
+          type: 'user',
+          isFile: true,
+          fileName: this.selectedFileName || ''
+        });
+   
+      }
+  
       this.loading = true;
       this.botTyping = true;
 
-      this.http.post<any>('http://localhost:5000/ask', { question: this.messages[this.messages.length - 1].text }).subscribe(
+      // Construct FormData to send the file
+      const formData=new FormData();
+      formData.append('question', hasText ? this.newMessage.trim() : '');
+      if(this.selectedFile){
+        formData.append('file',this.selectedFile,this.selectedFileName || '');
+      }
+
+      this.newMessage = '';
+      this.selectedFile = null;
+      this.selectedFileName = null;
+  
+      // Send only the text part to backend, not file name
+      // const lastTextMessage = this.messages
+      //   .filter(m => m.type === 'user' && !m.isFile)
+      //   .slice(-1)[0];
+  
+      this.http.post<any>('http://localhost:5000/ask', formData).subscribe(
         (response) => {
           const botResponse = response.answer.join('\n');
           this.messages.push({ text: botResponse, type: 'bot' });
@@ -55,6 +92,7 @@ export class ChatbotComponent implements AfterViewChecked {
       );
     }
   }
+  
 
   handleKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.newMessage.trim()) {

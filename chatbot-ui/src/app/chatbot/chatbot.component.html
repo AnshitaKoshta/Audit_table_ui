@@ -3,13 +3,10 @@
   <header class="p-4 flex items-center border-b" [ngClass]="{'bg-white border-gray-200': !isDarkTheme, 'bg-black border-none': isDarkTheme}">
     <img src="/assets/Chaticon.png" alt="SIM-AI Logo" class="h-8 mr-4" />
     <span class="font-bold">SIM-AI Virtual<br>Assistant</span>
-    <!-- Group buttons on the right -->
     <div class="ml-auto flex items-center space-x-2">
-      <!-- Theme Toggle Button -->
       <button class="p-2 rounded-full transition cursor-pointer" (click)="toggleTheme()">
         <span class="material-icons">{{ isDarkTheme ? 'light_mode' : 'dark_mode' }}</span>
       </button>
-      <!-- Logout Button -->
       <button class="p-2 rounded-full transition cursor-pointer">
         <span class="material-icons">logout</span>
       </button>
@@ -17,17 +14,50 @@
   </header>
 
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col overflow-hidden w-2/3 mx-auto rounded-lg m-2 " [ngClass]="{'bg-[#F8F6FC]': !isDarkTheme, 'bg-gray-900': isDarkTheme}" >
+  <div class="flex-1 flex flex-col overflow-hidden w-2/3 mx-auto rounded-lg m-2" [ngClass]="{'bg-[#F8F6FC]': !isDarkTheme, 'bg-gray-900': isDarkTheme}">
     <!-- Chat Area -->
-    <div #chatContainer class="flex-1 overflow-y-auto p-4 chat-container" >
+    <div #chatContainer class="flex-1 overflow-y-auto p-4 chat-container">
       <div class="space-y-4">
         <div *ngFor="let message of messages" class="flex items-start" [ngClass]="{'justify-end': message.type === 'user', 'justify-start': message.type === 'bot'}">
-          <div class="flex items-start p-2 rounded-lg" [ngClass]="{'bg-gray-100': message.type === 'user' && !isDarkTheme, 'bg-gray-800': message.type === 'user' && isDarkTheme, 'bg-gray': message.type === 'bot' && !isDarkTheme, 'bg-none': message.type === 'bot' && isDarkTheme}">
+          <div class="flex items-start p-2 rounded-lg" [ngClass]="{
+              'bg-gray-100': message.type === 'user' && !isDarkTheme && !message.isFile,
+              'bg-gray-800': message.type === 'user' && isDarkTheme && !message.isFile,
+              'bg-gray': message.type === 'bot' && !isDarkTheme,
+              'bg-none': message.type === 'bot' && isDarkTheme
+            }">
             <img *ngIf="message.type === 'bot'" class="pr-4 h-5" src="/assets/Star 2.png" alt="">
+
             <div>
-              <p class="text-left whitespace-pre-line" [ngClass]="{'text-gray-900 font-semibold': !isDarkTheme, 'text-white font-regular': isDarkTheme}">{{ message.text }}</p>
-              <!-- <p *ngIf="message.fileName" class="text-sm text-gray-500">Attached: {{ message.fileName }}</p> -->
+              <!-- Normal Text Message -->
+              <p *ngIf="!message.isFile" class="text-left whitespace-pre-line"
+                 [ngClass]="{
+                   'text-gray-900 font-semibold': !isDarkTheme,
+                   'text-white font-regular': isDarkTheme
+                 }">
+                {{ message.text }}
+              </p>
+        
+              <!-- File Message -->
+              <div *ngIf="message.isFile" class="mt:0">
+                <div class="inline-flex items-center px-3 py-1 rounded-full shadow border text-xs"
+                    [ngClass]="{
+                      'bg-white border-blue-300 text-blue-800': !isDarkTheme,
+                      'bg-gray-800 border-gray-500 text-white': isDarkTheme
+                    }">
+                  <span class="material-icons text-sm mr-1"
+                        style="font-size: 12px;"
+                        [ngClass]="{
+                          'text-blue-600': !isDarkTheme,
+                          'text-gray-300': isDarkTheme
+                        }">attach_file</span>
+                  <span class="truncate max-w-[100px]">{{ message.fileName }}</span>
+                </div>
+              </div>
+
+
+
             </div>
+
           </div>
         </div>
         <div *ngIf="botTyping" class="flex items-start justify-start">
@@ -39,14 +69,12 @@
       </div>
     </div>
 
-    
-    <!-- Input Area (Fixed at Bottom) -->
+    <!-- Input Area -->
     <div class="p-4 border rounded-lg" [ngClass]="{'bg-white border-gray-400': !isDarkTheme, 'bg-black border-white': isDarkTheme}">
       <div class="flex items-center space-x-2">
         <!-- File Upload Button -->
         <label class="p-2 rounded-full hover:bg-gray-300 transition-colors cursor-pointer">
           <input
-            [ngModel]="selectedFile"
             type="file"
             (change)="onFileSelected($event)"
             class="hidden"
@@ -54,6 +82,7 @@
           />
           <span class="material-icons" [ngClass]="{'text-gray-700': !isDarkTheme, 'text-gray-100': isDarkTheme}">attach_file</span>
         </label>
+
         <!-- Input Field -->
         <input
           type="text"
@@ -63,6 +92,7 @@
           class="flex-1 p-1 rounded-l-lg focus:outline-none"
           [ngClass]="{'text-gray-500 bg-white': !isDarkTheme, 'text-gray-200 bg-black': isDarkTheme}"
         />
+
         <!-- Send Button -->
         <button
           (click)="sendMessage()"
@@ -73,6 +103,15 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M22 2L15 22L11 13L2 9L22 2Z"></path>
           </svg>
         </button>
+      </div>
+
+      <!-- Show selected file -->
+      <div *ngIf="selectedFileName" class="mt-2 ml-2 inline-block px-3 py-1 border rounded-lg text-sm"
+           [ngClass]="{
+             'border-blue-400 bg-blue-50 text-blue-800': !isDarkTheme,
+             'border-gray-500 bg-gray-700 text-white': isDarkTheme
+           }">
+         {{ selectedFileName }}
       </div>
     </div>
   </div>

@@ -2,7 +2,6 @@ import { Component, ElementRef, ViewChild, AfterViewChecked } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-chatbot',
@@ -22,9 +21,8 @@ export class ChatbotComponent implements AfterViewChecked {
   loading: boolean = false;
   botTyping: boolean = false;
   isDarkTheme: boolean = false;
-  selectedFile: File | null = null;
-  selectedFileName: string | null = null;
 
+  selectedFiles: File[] = [];
   sessionId: string = this.getOrCreateSessionId();
 
   constructor(private http: HttpClient) {}
@@ -44,28 +42,29 @@ export class ChatbotComponent implements AfterViewChecked {
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      this.selectedFileName = this.selectedFile.name;
+    if (input.files) {
+      this.selectedFiles = Array.from(input.files);
     }
   }
 
- sendMessage() {
+  sendMessage() {
     const hasText = this.newMessage.trim() !== '';
-    const hasFile = this.selectedFile && this.selectedFileName;
+    const hasFiles = this.selectedFiles.length > 0;
 
-    if (!hasText && !hasFile) return;
+    if (!hasText && !hasFiles) return;
 
     if (hasText) {
       this.messages.push({ text: this.newMessage.trim(), type: 'user' });
     }
 
-    if (hasFile) {
-      this.messages.push({
-        text: `Attached: ${this.selectedFileName}`,
-        type: 'user',
-        isFile: true,
-        fileName: this.selectedFileName || ''
+    if (hasFiles) {
+      this.selectedFiles.forEach(file => {
+        this.messages.push({
+          text: `Attached: ${file.name}`,
+          type: 'user',
+          isFile: true,
+          fileName: file.name
+        });
       });
     }
 
@@ -74,18 +73,17 @@ export class ChatbotComponent implements AfterViewChecked {
 
     const formData = new FormData();
     if (hasText) formData.append('question', this.newMessage.trim());
-    if (hasFile) formData.append('file', this.selectedFile!, this.selectedFileName!);
+    this.selectedFiles.forEach(file => formData.append('files', file, file.name));
     formData.append('session_id', this.sessionId);
 
     // Reset input fields
     this.newMessage = '';
-    this.selectedFile = null;
-    this.selectedFileName = null;
+    this.selectedFiles = [];
 
     this.http.post<any>('http://localhost:5000/ask', formData).subscribe(
       (response) => {
         const botResponse = response.answer || response.message || 'No response from server.';
-        this.displayBotMessageWithTypingEffect(botResponse); // 👈 use animation
+        this.displayBotMessageWithTypingEffect(botResponse);
         this.botTyping = false;
         this.loading = false;
       },
@@ -118,22 +116,18 @@ export class ChatbotComponent implements AfterViewChecked {
     }
   }
 
-
-
   private async displayBotMessageWithTypingEffect(fullText: string) {
-  this.messages.push({ text: '', type: 'bot' });
-  const index = this.messages.length - 1;
-  let currentText = '';
+    this.messages.push({ text: '', type: 'bot' });
+    const index = this.messages.length - 1;
+    let currentText = '';
 
-  for (let i = 0; i < fullText.length; i++) {
-    currentText += fullText[i];
-    this.messages[index].text = currentText;
-    await this.delay(10); // ⏱️ Adjust this value to slow down or speed up typing
+    for (let i = 0; i < fullText.length; i++) {
+      currentText += fullText[i];
+      this.messages[index].text = currentText;
+      await this.delay(10);
+    }
+    this.botTyping = false;
   }
-
-  this.botTyping = false;
-}
-
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));

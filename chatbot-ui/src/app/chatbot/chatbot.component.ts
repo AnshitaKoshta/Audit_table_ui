@@ -48,53 +48,42 @@ export class ChatbotComponent implements AfterViewChecked {
   }
 
   sendMessage() {
-    const hasText = this.newMessage.trim() !== '';
-    const hasFiles = this.selectedFiles.length > 0;
+  const userId = 'curl_test_user';
+  const sessionId = this.sessionId;
+  const messageText = this.newMessage.trim();
 
-    if (!hasText && !hasFiles) return;
+  if (!messageText) return;
 
-    if (hasText) {
-      this.messages.push({ text: this.newMessage.trim(), type: 'user' });
+  // Add user message to chat
+  this.messages.push({ text: messageText, type: 'user' });
+
+  this.loading = true;
+  this.botTyping = true;
+
+  // Reset input
+  this.newMessage = '';
+
+  const payload = {
+    user_id: userId,
+    session_id: sessionId,
+    text: messageText
+  };
+
+  this.http.post<any>('http://localhost:8000/api/v1/chat/send_message', payload).subscribe(
+    (response) => {
+      const botResponse = response?.payload?.text || 'No response from server.';
+      this.displayBotMessageWithTypingEffect(botResponse);
+      this.botTyping = false;
+      this.loading = false;
+    },
+    (error) => {
+      console.error('Error fetching response:', error);
+      this.messages.push({ text: 'Sorry, an error occurred. Please try again.', type: 'bot' });
+      this.botTyping = false;
+      this.loading = false;
     }
-
-    if (hasFiles) {
-      this.selectedFiles.forEach(file => {
-        this.messages.push({
-          text: `Attached: ${file.name}`,
-          type: 'user',
-          isFile: true,
-          fileName: file.name
-        });
-      });
-    }
-
-    this.loading = true;
-    this.botTyping = true;
-
-    const formData = new FormData();
-    if (hasText) formData.append('question', this.newMessage.trim());
-    this.selectedFiles.forEach(file => formData.append('files', file, file.name));
-    formData.append('session_id', this.sessionId);
-
-    // Reset input fields
-    this.newMessage = '';
-    this.selectedFiles = [];
-
-    this.http.post<any>('http://localhost:5000/ask', formData).subscribe(
-      (response) => {
-        const botResponse = response.answer || response.message || 'No response from server.';
-        this.displayBotMessageWithTypingEffect(botResponse);
-        this.botTyping = false;
-        this.loading = false;
-      },
-      (error) => {
-        console.error('Error fetching response:', error);
-        this.messages.push({ text: 'Sorry, an error occurred. Please try again.', type: 'bot' });
-        this.botTyping = false;
-        this.loading = false;
-      }
-    );
-  }
+  );
+}
 
   handleKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.newMessage.trim()) {
